@@ -7181,6 +7181,7 @@ static int selinux_perf_event_write(struct perf_event *event)
 #ifdef CONFIG_KDP_CRED
 static struct security_hook_list selinux_hooks[] __lsm_ro_after_init_kdp = {
 #else
+
 static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
 #endif
 	LSM_HOOK_INIT(binder_set_context_mgr, selinux_binder_set_context_mgr),
