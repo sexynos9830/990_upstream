@@ -358,9 +358,10 @@ struct mm_struct {
 		struct vm_area_struct *mmap;		/* list of VMAs */
 		struct rb_root mm_rb;
 #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-		rwlock_t mm_rb_lock;
+		rwlock_t mm_rb_lock;	/* Speculative page fault field */
 #endif
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
+
 #ifdef CONFIG_MMU
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
