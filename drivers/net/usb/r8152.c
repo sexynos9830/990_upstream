@@ -465,6 +465,7 @@ enum spd_duplex {
 
 /* OCP_PHY_STATUS */
 #define PHY_STAT_MASK		0x0007
+#define PHY_STAT_EXT_INIT	2
 #define PHY_STAT_LAN_ON		3
 #define PHY_STAT_PWRDN		5
 
@@ -2837,6 +2838,30 @@ static void r8153_u2p3en(struct r8152 *tp, bool enable)
 	else
 		ocp_data &= ~U2P3_ENABLE;
 	ocp_write_word(tp, MCU_TYPE_USB, USB_U2P3_CTRL, ocp_data);
+}
+
+static u16 r8153_phy_status(struct r8152 *tp, u16 desired)
+{
+	u16 data;
+	int i;
+
+	for (i = 0; i < 500; i++) {
+		data = ocp_reg_read(tp, OCP_PHY_STATUS);
+		data &= PHY_STAT_MASK;
+		if (desired) {
+			if (data == desired)
+				break;
+		} else if (data == PHY_STAT_LAN_ON || data == PHY_STAT_PWRDN ||
+			   data == PHY_STAT_EXT_INIT) {
+			break;
+		}
+
+		msleep(20);
+		if (test_bit(RTL8152_UNPLUG, &tp->flags))
+			break;
+	}
+
+	return data;
 }
 
 static void r8153b_ups_en(struct r8152 *tp, bool enable)
@@ -5842,7 +5867,10 @@ static void r8153_init(struct r8152 *tp)
 		if (ocp_read_word(tp, MCU_TYPE_PLA, PLA_BOOT_CTRL) &
 		    AUTOLOAD_DONE)
 			break;
+
 		msleep(20);
+		if (test_bit(RTL8152_UNPLUG, &tp->flags))
+			break;
 	}
 
 	for (i = 0; i < 500; i++) {
@@ -5970,7 +5998,10 @@ static void r8153b_init(struct r8152 *tp)
 		if (ocp_read_word(tp, MCU_TYPE_PLA, PLA_BOOT_CTRL) &
 		    AUTOLOAD_DONE)
 			break;
+
 		msleep(20);
+		if (test_bit(RTL8152_UNPLUG, &tp->flags))
+			break;
 	}
 
 	for (i = 0; i < 500; i++) {
