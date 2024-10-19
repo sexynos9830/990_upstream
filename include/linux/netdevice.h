@@ -3555,6 +3555,7 @@ struct sk_buff *napi_get_frags(struct napi_struct *napi);
 gro_result_t napi_gro_frags(struct napi_struct *napi);
 struct packet_offload *gro_find_receive_by_type(__be16 type);
 struct packet_offload *gro_find_complete_by_type(__be16 type);
+extern struct napi_struct *get_current_napi_context(void);
 
 #if defined(CONFIG_EXYNOS_MODEM_IF)
 struct napi_struct *napi_get_current(void);
