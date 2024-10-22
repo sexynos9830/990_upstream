@@ -510,6 +510,5 @@ int ion_system_contig_heap_create(void)
 }
 
 #ifndef CONFIG_ION_MODULE
-device_initcall(ion_system_contig_heap_create);
-device_initcall(ion_system_heap_create);
+subsys_initcall(ion_system_heap_create);
 #endif
