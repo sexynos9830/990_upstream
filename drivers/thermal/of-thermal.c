@@ -155,10 +155,10 @@ static int of_thermal_throttle_hotplug(struct thermal_zone_device *tz)
 	struct __thermal_zone *data = tz->devdata;
 	int ret = 0;
 
-	if (!data->ops->throttle_cpu_hotplug)
+	if (!data->senps->ops->throttle_cpu_hotplug)
 		return -EINVAL;
 
-	ret = data->ops->throttle_cpu_hotplug(data->sensor_data, tz->temperature);
+	ret = data->senps->ops->throttle_cpu_hotplug(data->senps->sensor_data, tz->temperature);
 
 	return ret;
 }
