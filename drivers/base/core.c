@@ -221,6 +221,19 @@ void device_pm_move_to_tail(struct device *dev)
 	device_links_read_unlock(idx);
 }
 
+static void device_link_rpm_prepare(struct device *consumer,
+				    struct device *supplier)
+{
+	pm_runtime_new_link(consumer);
+	/*
+	 * If the link is being added by the consumer driver at probe time,
+	 * balance the decrementation of the supplier's runtime PM usage counter
+	 * after consumer probe in driver_probe_device().
+	 */
+	if (consumer->links.status == DL_DEV_PROBING)
+		pm_runtime_get_noresume(supplier);
+}
+
 #define DL_MANAGED_LINK_FLAGS (DL_FLAG_AUTOREMOVE_CONSUMER | \
 			       DL_FLAG_AUTOREMOVE_SUPPLIER | \
 			       DL_FLAG_AUTOPROBE_CONSUMER  | \
@@ -340,7 +353,7 @@ struct device_link *device_link_add(struct device *consumer,
 
 		if (flags & DL_FLAG_PM_RUNTIME) {
 			if (!(link->flags & DL_FLAG_PM_RUNTIME)) {
-				pm_runtime_new_link(consumer);
+				device_link_rpm_prepare(consumer, supplier);
 				link->flags |= DL_FLAG_PM_RUNTIME;
 			}
 			if (flags & DL_FLAG_RPM_ACTIVE)
@@ -396,7 +409,7 @@ struct device_link *device_link_add(struct device *consumer,
 		if (flags & DL_FLAG_RPM_ACTIVE)
 			refcount_inc(&link->rpm_active);
 
-		pm_runtime_new_link(consumer);
+		device_link_rpm_prepare(consumer, supplier);
 	}
 
 	get_device(supplier);
